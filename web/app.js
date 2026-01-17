@@ -412,24 +412,33 @@ function updateUIWithData(data) {
 
     // Update BINS data (Light mode)
     if (data.info === 'bins') {
-        // Firmware returns bins with ch_* keys
-        if (data.bins) {
-            const bins = {
-                bin0: data.bins.ch_0_3_0_5 || data.bins['ch_0_3_0_5'] || 0,
-                bin1: data.bins.ch_0_5_1 || data.bins['ch_0_5_1'] || 0,
-                bin2: data.bins.ch_1_2_5 || data.bins['ch_1_2_5'] || 0,
-                bin3: data.bins.ch_2_5_5 || data.bins['ch_2_5_5'] || 0,
-                bin4: data.bins.ch_5_10 || data.bins['ch_5_10'] || 0
-            };
-            updateBINSChart(bins);
-        }
-        // Fallback: parse from raw
-        else if (data.raw) {
+        // PRIORITY: Parse from raw data (most reliable)
+        if (data.raw) {
             const rawBytes = data.raw.split(' ').map(b => parseInt(b, 16));
             const bins = app.kernel.parseBinsData(rawBytes);
             if (bins) {
                 updateBINSChart(bins);
             }
+        }
+        // FALLBACK: Try to extract from bins JSON
+        else if (data.bins) {
+            // Firmware returns bins with ch_* keys (with dots: "ch_0.3_0.5")
+            const bins = {
+                bin0: data.bins['ch_0.3_0.5'] || data.bins['ch_0_3_0_5'] || 0,
+                bin1: data.bins['ch_0.5_1'] || data.bins['ch_0_5_1'] || 0,
+                bin2: data.bins['ch_1_2.5'] || data.bins['ch_1_2_5'] || 0,
+                bin3: data.bins['ch_2.5_5'] || data.bins['ch_2_5_5'] || 0,
+                bin4: data.bins['ch_5_10'] || 0
+            };
+
+            // Apply 16-bit mask to handle 32-bit encoding issue
+            Object.keys(bins).forEach(key => {
+                if (bins[key] > 65535) {
+                    bins[key] = bins[key] & 0xFFFF;
+                }
+            });
+
+            updateBINSChart(bins);
         }
     }
 }

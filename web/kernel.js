@@ -392,27 +392,39 @@ class NextPMKernel {
             const response = await this.sendAndWait(cmd, 10000); // BINS can be slow
 
             if (response.ok) {
-                // Check if bins data is directly in response (firmware format)
-                if (response.bins) {
-                    // Firmware returns bins with ch_* keys
-                    return {
-                        bins: {
-                            bin0: response.bins.ch_0_3_0_5 || response.bins['ch_0_3_0_5'] || 0,
-                            bin1: response.bins.ch_0_5_1 || response.bins['ch_0_5_1'] || 0,
-                            bin2: response.bins.ch_1_2_5 || response.bins['ch_1_2_5'] || 0,
-                            bin3: response.bins.ch_2_5_5 || response.bins['ch_2_5_5'] || 0,
-                            bin4: response.bins.ch_5_10 || response.bins['ch_5_10'] || 0
-                        },
-                        raw: response.raw,
-                        average: response.avg,
-                        checksumOk: response.nextpm ? response.nextpm.chk_ok : false
-                    };
-                }
-
-                // Fallback: parse from raw if available
+                // PRIORITY: Parse from raw data (most reliable, correct uint16 values)
                 if (response.raw) {
                     const rawBytes = response.raw.split(' ').map(b => parseInt(b, 16));
                     const bins = this.parseBinsData(rawBytes);
+
+                    if (bins) {
+                        return {
+                            bins,
+                            raw: response.raw,
+                            average: response.avg,
+                            checksumOk: response.nextpm ? response.nextpm.chk_ok : false
+                        };
+                    }
+                }
+
+                // FALLBACK: Try to extract from bins JSON (but values may be 32-bit encoded)
+                if (response.bins) {
+                    // Firmware returns bins with ch_* keys (with dots: "ch_0.3_0.5")
+                    // Try both dot and underscore formats for compatibility
+                    const bins = {
+                        bin0: response.bins['ch_0.3_0.5'] || response.bins['ch_0_3_0_5'] || 0,
+                        bin1: response.bins['ch_0.5_1'] || response.bins['ch_0_5_1'] || 0,
+                        bin2: response.bins['ch_1_2.5'] || response.bins['ch_1_2_5'] || 0,
+                        bin3: response.bins['ch_2.5_5'] || response.bins['ch_2_5_5'] || 0,
+                        bin4: response.bins['ch_5_10'] || 0
+                    };
+
+                    // Apply 16-bit mask to handle potential 32-bit encoding issue
+                    Object.keys(bins).forEach(key => {
+                        if (bins[key] > 65535) {
+                            bins[key] = bins[key] & 0xFFFF;
+                        }
+                    });
 
                     return {
                         bins,
