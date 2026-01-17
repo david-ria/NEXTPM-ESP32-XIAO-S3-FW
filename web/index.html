@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextPM Monitor - v1.0.0-prod</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1>NextPM Monitor</h1>
+                <span class="version">v1.0.0-prod</span>
+            </div>
+            <div class="header-center">
+                <div id="connection-status" class="status-badge disconnected">
+                    <span class="status-icon">●</span>
+                    <span class="status-text">Déconnecté</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="connect-btn" class="btn btn-primary">
+                    <span class="icon">🔌</span>
+                    Se connecter
+                </button>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="light">
+                <span class="icon">📊</span>
+                Vue Utilisateur
+            </button>
+            <button class="tab-btn" data-tab="pro">
+                <span class="icon">🔧</span>
+                Vue Technique
+            </button>
+        </nav>
+
+        <!-- Tab Content -->
+        <main class="tab-content">
+            <!-- Light Mode Tab -->
+            <div id="light-tab" class="tab-pane active">
+                <!-- Air Quality Overview -->
+                <section class="card air-quality-overview">
+                    <h2>Qualité de l'air</h2>
+                    <div class="aqi-display">
+                        <div class="aqi-circle" id="aqi-indicator">
+                            <div class="aqi-value">--</div>
+                            <div class="aqi-label">PM2.5</div>
+                        </div>
+                        <div class="aqi-description">
+                            <div class="aqi-status" id="aqi-status">En attente...</div>
+                            <div class="aqi-message" id="aqi-message">Connectez le capteur pour voir les données</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Environmental Conditions -->
+                <div class="card-grid">
+                    <div class="card metric-card">
+                        <div class="metric-icon">🌡️</div>
+                        <div class="metric-content">
+                            <div class="metric-label">Température</div>
+                            <div class="metric-value" id="temp-value">--</div>
+                            <div class="metric-unit">°C</div>
+                        </div>
+                    </div>
+                    <div class="card metric-card">
+                        <div class="metric-icon">💧</div>
+                        <div class="metric-content">
+                            <div class="metric-label">Humidité</div>
+                            <div class="metric-value" id="humidity-value">--</div>
+                            <div class="metric-unit">%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PM Values -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>Particules (µg/m³)</h2>
+                        <div class="control-group">
+                            <label for="light-interval">Moyenne:</label>
+                            <select id="light-interval" class="select">
+                                <option value="10s">10 secondes</option>
+                                <option value="1m" selected>1 minute</option>
+                                <option value="15m">15 minutes</option>
+                            </select>
+                            <button id="light-refresh" class="btn btn-secondary">🔄 Actualiser</button>
+                        </div>
+                    </div>
+                    <div class="pm-bars">
+                        <div class="pm-bar-item">
+                            <div class="pm-bar-label">PM1.0</div>
+                            <div class="pm-bar-container">
+                                <div class="pm-bar pm1" id="pm1-bar" style="width: 0%"></div>
+                            </div>
+                            <div class="pm-bar-value" id="pm1-value">--</div>
+                        </div>
+                        <div class="pm-bar-item">
+                            <div class="pm-bar-label">PM2.5</div>
+                            <div class="pm-bar-container">
+                                <div class="pm-bar pm25" id="pm25-bar" style="width: 0%"></div>
+                            </div>
+                            <div class="pm-bar-value" id="pm25-value">--</div>
+                        </div>
+                        <div class="pm-bar-item">
+                            <div class="pm-bar-label">PM10</div>
+                            <div class="pm-bar-container">
+                                <div class="pm-bar pm10" id="pm10-bar" style="width: 0%"></div>
+                            </div>
+                            <div class="pm-bar-value" id="pm10-value">--</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- BINS Distribution -->
+                <section class="card">
+                    <h2>Distribution des tailles de particules</h2>
+                    <div id="bins-info" class="info-message">Les données BINS nécessitent un capteur avec firmware >= 1047</div>
+                    <canvas id="bins-chart"></canvas>
+                </section>
+
+                <!-- PM Timeline Chart -->
+                <section class="card">
+                    <h2>Historique des particules</h2>
+                    <canvas id="pm-timeline-chart"></canvas>
+                </section>
+            </div>
+
+            <!-- Pro Mode Tab -->
+            <div id="pro-tab" class="tab-pane">
+                <!-- Sensor Information -->
+                <section class="card">
+                    <h2>Informations capteur</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Firmware ESP32:</span>
+                            <span class="info-value" id="pro-fw-esp">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Firmware NextPM:</span>
+                            <span class="info-value" id="pro-fw-sensor">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">État capteur:</span>
+                            <span class="info-value" id="pro-sensor-state">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Support BINS:</span>
+                            <span class="info-value" id="pro-bins-support">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Uptime:</span>
+                            <span class="info-value" id="pro-uptime">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Checksums:</span>
+                            <span class="info-value" id="pro-checksum">--</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Commands -->
+                <section class="card">
+                    <h2>Commandes rapides</h2>
+                    <div class="button-group">
+                        <button class="btn btn-secondary" data-cmd="PING">PING</button>
+                        <button class="btn btn-secondary" data-cmd="FW">FW</button>
+                        <button class="btn btn-secondary" data-cmd="STATE">STATE</button>
+                        <button class="btn btn-secondary" data-cmd="TRH">TRH</button>
+                        <button class="btn btn-secondary" data-cmd="PM">PM</button>
+                        <button class="btn btn-secondary" data-cmd="PM 1M">PM 1M</button>
+                        <button class="btn btn-secondary" data-cmd="PM 15M">PM 15M</button>
+                        <button class="btn btn-secondary" data-cmd="BINS">BINS</button>
+                        <button class="btn btn-secondary" data-cmd="SNAPSHOT">SNAPSHOT</button>
+                    </div>
+                </section>
+
+                <!-- Custom Command -->
+                <section class="card">
+                    <h2>Commande personnalisée</h2>
+                    <div class="command-input-group">
+                        <input type="text" id="custom-command" class="input" placeholder="Ex: RAW 0x17 6">
+                        <button id="send-custom-btn" class="btn btn-primary">Envoyer</button>
+                    </div>
+                </section>
+
+                <!-- Raw Data Display -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>Données brutes</h2>
+                        <button id="clear-raw-btn" class="btn btn-secondary">Effacer</button>
+                    </div>
+                    <div id="raw-data-display" class="raw-data-container"></div>
+                </section>
+
+                <!-- Debug Logs -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>Logs de débogage</h2>
+                        <div class="control-group">
+                            <label>
+                                <input type="checkbox" id="auto-scroll-logs" checked>
+                                Auto-scroll
+                            </label>
+                            <button id="clear-logs-btn" class="btn btn-secondary">Effacer</button>
+                        </div>
+                    </div>
+                    <div id="debug-logs" class="logs-container"></div>
+                </section>
+
+                <!-- Advanced Charts -->
+                <section class="card">
+                    <h2>Graphiques détaillés</h2>
+                    <div class="chart-tabs">
+                        <button class="chart-tab-btn active" data-chart="pm-detail">PM Détaillé</button>
+                        <button class="chart-tab-btn" data-chart="endianness">Endianness</button>
+                        <button class="chart-tab-btn" data-chart="checksum">Checksums</button>
+                    </div>
+                    <canvas id="pro-detail-chart"></canvas>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <span>NextPM Monitor v1.0.0-prod</span>
+                <span>|</span>
+                <span>XIAO ESP32-S3 + NextPM Sensor</span>
+                <span>|</span>
+                <a href="https://github.com/david-ria/NEXTPM-ESP32-XIAO-S3-FW" target="_blank">GitHub</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="kernel.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

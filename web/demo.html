@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextPM Monitor - Demo Mode</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        .demo-banner {
+            background: #FF9800;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-banner">
+        🎭 MODE DÉMONSTRATION - Données simulées pour test de l'interface
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1>NextPM Monitor</h1>
+                <span class="version">v1.0.0-prod (DEMO)</span>
+            </div>
+            <div class="header-center">
+                <div id="connection-status" class="status-badge connected">
+                    <span class="status-icon">●</span>
+                    <span class="status-text">Simulation Active</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="toggle-simulation" class="btn btn-primary">
+                    <span class="icon">▶️</span>
+                    Pause
+                </button>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="light">
+                <span class="icon">📊</span>
+                Vue Utilisateur
+            </button>
+            <button class="tab-btn" data-tab="pro">
+                <span class="icon">🔧</span>
+                Vue Technique
+            </button>
+        </nav>
+
+        <!-- Include same content as index.html but with demo data -->
+        <main class="tab-content">
+            <!-- Light Mode Tab -->
+            <div id="light-tab" class="tab-pane active">
+                <section class="card air-quality-overview">
+                    <h2>Qualité de l'air</h2>
+                    <div class="aqi-display">
+                        <div class="aqi-circle" id="aqi-indicator" style="background: conic-gradient(#00e400 30%, #ddd 0)">
+                            <div class="aqi-value">35</div>
+                            <div class="aqi-label">PM2.5</div>
+                        </div>
+                        <div class="aqi-description">
+                            <div class="aqi-status" style="color: #00e400">Bon</div>
+                            <div class="aqi-message">La qualité de l'air est excellente.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="card-grid">
+                    <div class="card metric-card">
+                        <div class="metric-icon">🌡️</div>
+                        <div class="metric-content">
+                            <div class="metric-label">Température</div>
+                            <div class="metric-value" id="temp-value">24.5</div>
+                            <div class="metric-unit">°C</div>
+                        </div>
+                    </div>
+                    <div class="card metric-card">
+                        <div class="metric-icon">💧</div>
+                        <div class="metric-content">
+                            <div class="metric-label">Humidité</div>
+                            <div class="metric-value" id="humidity-value">45.2</div>
+                            <div class="metric-unit">%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="card">
+                    <div class="card-header">
+                        <h2>Particules (µg/m³)</h2>
+                        <div class="control-group">
+                            <label>Simulation:</label>
+                            <select id="demo-scenario" class="select">
+                                <option value="good">Air propre</option>
+                                <option value="moderate" selected>Air modéré</option>
+                                <option value="pollution">Pollution</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pm-bars">
+                        <div class="pm-bar-item">
+                            <div class="pm-bar-label">PM1.0</div>
+                            <div class="pm-bar-container">
+                                <div class="pm-bar pm1" id="pm1-bar" style="width: 8%"></div>
+                            </div>
+                            <div class="pm-bar-value" id="pm1-value">8.2</div>
+                        </div>
+                        <div class="pm-bar-item">
+                            <div class="pm-bar-label">PM2.5</div>
+                            <div class="pm-bar-container">
+                                <div class="pm-bar pm25" id="pm25-bar" style="width: 12%"></div>
+                            </div>
+                            <div class="pm-bar-value" id="pm25-value">12.5</div>
+                        </div>
+                        <div class="pm-bar-item">
+                            <div class="pm-bar-label">PM10</div>
+                            <div class="pm-bar-container">
+                                <div class="pm-bar pm10" id="pm10-bar" style="width: 18%"></div>
+                            </div>
+                            <div class="pm-bar-value" id="pm10-value">18.3</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Distribution des tailles de particules</h2>
+                    <canvas id="bins-chart"></canvas>
+                </section>
+
+                <section class="card">
+                    <h2>Historique des particules</h2>
+                    <canvas id="pm-timeline-chart"></canvas>
+                </section>
+            </div>
+
+            <!-- Pro Mode Tab -->
+            <div id="pro-tab" class="tab-pane">
+                <section class="card">
+                    <h2>Informations capteur (DEMO)</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Firmware ESP32:</span>
+                            <span class="info-value">1.1.0-expert</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Firmware NextPM:</span>
+                            <span class="info-value">4167 (0x1047)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">État capteur:</span>
+                            <span class="info-value">Ready (0)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Support BINS:</span>
+                            <span class="info-value" style="color: #4CAF50">Oui</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Uptime:</span>
+                            <span class="info-value" id="demo-uptime">2h 15m</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Checksums:</span>
+                            <span class="info-value" style="color: #4CAF50">OK</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Données simulées</h2>
+                    <p style="padding: 16px; background: #e3f2fd; border-radius: 8px;">
+                        Cette démo génère des données aléatoires pour tester l'interface sans hardware.
+                        Pour utiliser avec du vrai hardware, ouvrir <strong>index.html</strong>.
+                    </p>
+                </section>
+
+                <section class="card">
+                    <div class="card-header">
+                        <h2>Logs de simulation</h2>
+                        <button id="clear-demo-logs" class="btn btn-secondary">Effacer</button>
+                    </div>
+                    <div id="demo-logs" class="logs-container"></div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="footer-content">
+                <span>NextPM Monitor v1.0.0-prod - MODE DÉMONSTRATION</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Demo simulation logic
+        let simulationRunning = true;
+        let pmChart, binsChart;
+        const pmHistory = { labels: [], pm1: [], pm25: [], pm10: [] };
+        const maxPoints = 30;
+
+        // Scenarios
+        const scenarios = {
+            good: { pm1: [3, 8], pm25: [5, 12], pm10: [8, 20] },
+            moderate: { pm1: [8, 15], pm25: [12, 30], pm10: [18, 45] },
+            pollution: { pm1: [20, 40], pm25: [35, 70], pm10: [50, 100] }
+        };
+
+        let currentScenario = 'moderate';
+
+        // Initialize charts
+        function initCharts() {
+            const pmCtx = document.getElementById('pm-timeline-chart');
+            pmChart = new Chart(pmCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'PM1.0',
+                            data: [],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'PM2.5',
+                            data: [],
+                            borderColor: '#FF9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'PM10',
+                            data: [],
+                            borderColor: '#F44336',
+                            backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.5,
+                    plugins: {
+                        legend: { display: true, position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'µg/m³' } },
+                        x: { title: { display: true, text: 'Temps' } }
+                    }
+                }
+            });
+
+            const binsCtx = document.getElementById('bins-chart');
+            binsChart = new Chart(binsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0.3-0.5 µm', '0.5-1.0 µm', '1.0-2.5 µm', '2.5-5.0 µm', '5.0-10 µm'],
+                    datasets: [{
+                        label: 'Nombre de particules',
+                        data: [150, 120, 80, 40, 20],
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.8)',
+                            'rgba(33, 150, 243, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(255, 152, 0, 0.8)',
+                            'rgba(244, 67, 54, 0.8)'
+                        ],
+                        borderColor: ['#4CAF50', '#2196F3', '#FFC107', '#FF9800', '#F44336'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.5,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Nombre de particules' } }
+                    }
+                }
+            });
+        }
+
+        // Generate random value in range
+        function random(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        // Update simulation
+        function updateSimulation() {
+            if (!simulationRunning) return;
+
+            const scenario = scenarios[currentScenario];
+
+            // Generate PM values
+            const pm1 = random(...scenario.pm1);
+            const pm25 = random(...scenario.pm25);
+            const pm10 = random(...scenario.pm10);
+
+            // Update displays
+            document.getElementById('pm1-value').textContent = pm1.toFixed(1);
+            document.getElementById('pm25-value').textContent = pm25.toFixed(1);
+            document.getElementById('pm10-value').textContent = pm10.toFixed(1);
+
+            document.getElementById('pm1-bar').style.width = `${Math.min(pm1, 100)}%`;
+            document.getElementById('pm25-bar').style.width = `${Math.min(pm25, 100)}%`;
+            document.getElementById('pm10-bar').style.width = `${Math.min(pm10, 100)}%`;
+
+            // Update temperature/humidity
+            const temp = 20 + Math.random() * 10;
+            const hum = 35 + Math.random() * 30;
+            document.getElementById('temp-value').textContent = temp.toFixed(1);
+            document.getElementById('humidity-value').textContent = hum.toFixed(1);
+
+            // Add to history
+            const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            pmHistory.labels.push(time);
+            pmHistory.pm1.push(pm1);
+            pmHistory.pm25.push(pm25);
+            pmHistory.pm10.push(pm10);
+
+            if (pmHistory.labels.length > maxPoints) {
+                pmHistory.labels.shift();
+                pmHistory.pm1.shift();
+                pmHistory.pm25.shift();
+                pmHistory.pm10.shift();
+            }
+
+            // Update chart
+            pmChart.data.labels = pmHistory.labels;
+            pmChart.data.datasets[0].data = pmHistory.pm1;
+            pmChart.data.datasets[1].data = pmHistory.pm25;
+            pmChart.data.datasets[2].data = pmHistory.pm10;
+            pmChart.update('none');
+
+            // Update BINS
+            binsChart.data.datasets[0].data = [
+                Math.floor(100 + Math.random() * 100),
+                Math.floor(80 + Math.random() * 80),
+                Math.floor(50 + Math.random() * 50),
+                Math.floor(30 + Math.random() * 30),
+                Math.floor(15 + Math.random() * 15)
+            ];
+            binsChart.update('none');
+
+            // Add log
+            addDemoLog('INFO', `PM2.5: ${pm25.toFixed(1)} µg/m³, Temp: ${temp.toFixed(1)}°C`);
+        }
+
+        // Add demo log
+        function addDemoLog(level, message) {
+            const container = document.getElementById('demo-logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${level.toLowerCase()}`;
+            const time = new Date().toLocaleTimeString('fr-FR');
+            entry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-level">${level}</span>
+                <span class="log-message">${message}</span>
+            `;
+            container.appendChild(entry);
+
+            if (container.children.length > 50) {
+                container.removeChild(container.firstChild);
+            }
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+
+            // Toggle simulation
+            document.getElementById('toggle-simulation').addEventListener('click', (e) => {
+                simulationRunning = !simulationRunning;
+                e.target.innerHTML = simulationRunning
+                    ? '<span class="icon">▶️</span> Pause'
+                    : '<span class="icon">⏸️</span> Reprendre';
+                document.getElementById('connection-status').innerHTML = simulationRunning
+                    ? '<span class="status-icon">●</span><span class="status-text">Simulation Active</span>'
+                    : '<span class="status-icon">●</span><span class="status-text">En Pause</span>';
+            });
+
+            // Change scenario
+            document.getElementById('demo-scenario').addEventListener('change', (e) => {
+                currentScenario = e.target.value;
+                addDemoLog('INFO', `Scénario changé: ${e.target.options[e.target.selectedIndex].text}`);
+            });
+
+            // Clear logs
+            document.getElementById('clear-demo-logs').addEventListener('click', () => {
+                document.getElementById('demo-logs').innerHTML = '';
+            });
+
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+
+            // Start simulation
+            addDemoLog('INFO', 'Simulation démarrée');
+            setInterval(updateSimulation, 2000); // Update every 2 seconds
+        });
+    </script>
+</body>
+</html>
