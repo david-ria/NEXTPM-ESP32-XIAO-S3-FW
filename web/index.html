@@ -13,7 +13,7 @@
         <header class="app-header">
             <div class="header-left">
                 <h1>NextPM Monitor</h1>
-                <span class="version">v1.0.0-prod</span>
+                <span class="version" id="app-version">v1.0.0-prod</span>
             </div>
             <div class="header-center">
                 <div id="connection-status" class="status-badge disconnected">
@@ -231,7 +231,7 @@
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-content">
-                <span>NextPM Monitor v1.0.0-prod</span>
+                <span id="app-version-footer">NextPM Monitor v1.0.0-prod</span>
                 <span>|</span>
                 <span>XIAO ESP32-S3 + NextPM Sensor</span>
                 <span>|</span>
@@ -241,6 +241,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="version.js"></script>
     <script src="kernel.js"></script>
     <script src="app.js"></script>
 </body>
