@@ -1,6 +1,6 @@
 /**
  * Version Information
- * Build timestamp: 2026-01-17 15:42:47 UTC
+ * Build timestamp: 2026-01-17 15:53:55 UTC
  *
  * This file is auto-generated on each build.
  * To update the version, run: python update_version.py [major|minor|patch]
@@ -9,10 +9,10 @@
 const APP_VERSION = {
     major: 1,
     minor: 0,
-    patch: 2,
+    patch: 3,
     tag: 'prod',
-    build: '20260117-154247',
-    buildDate: new Date('2026-01-17T15:42:47Z'),
+    build: '20260117-155355',
+    buildDate: new Date('2026-01-17T15:53:55Z'),
 
     // Full version string
     get full() {

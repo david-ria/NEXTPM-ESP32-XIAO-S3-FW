@@ -453,19 +453,25 @@ class NextPMKernel {
         // [5-6] = bin 1 (0.5-1.0 µm)
         // [7-8] = bin 2 (1.0-2.5 µm)
         // [9-10] = bin 3 (2.5-5.0 µm)
-        // [11-12] = bin 4 (5.0-10 µm)
-        // [13-20] = reserved
+        // [11-12] = RESERVED (gap)
+        // [13-14] = bin 4 (5.0-10 µm)
+        // [15-20] = reserved
         // [21-22] = checksum
 
         if (bytes.length < 23) {
             return null;
         }
 
-        // Extract bins (swap endianness: MSB first)
+        // Extract bins with correct offsets (MSB first)
+        // Note: There's a 2-byte gap between bin3 and bin4
+        const offsets = [3, 5, 7, 9, 13];
         const bins = [];
+
         for (let i = 0; i < 5; i++) {
-            const offset = 3 + (i * 2);
-            const value = (bytes[offset] << 8) | bytes[offset + 1];
+            const offset = offsets[i];
+            const msb = bytes[offset];
+            const lsb = bytes[offset + 1];
+            const value = (msb << 8) | lsb;
             bins.push(value);
         }
 
