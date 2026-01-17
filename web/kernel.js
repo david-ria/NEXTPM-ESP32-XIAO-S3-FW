@@ -391,20 +391,36 @@ class NextPMKernel {
             const cmd = average === '10s' ? 'BINS' : `BINS ${average.toUpperCase()}`;
             const response = await this.sendAndWait(cmd, 10000); // BINS can be slow
 
-            if (response.ok && response.raw) {
-                // Parse BINS raw data
-                const rawBytes = response.raw.split(' ').map(b => parseInt(b, 16));
+            if (response.ok) {
+                // Check if bins data is directly in response (firmware format)
+                if (response.bins) {
+                    // Firmware returns bins with ch_* keys
+                    return {
+                        bins: {
+                            bin0: response.bins.ch_0_3_0_5 || response.bins['ch_0_3_0_5'] || 0,
+                            bin1: response.bins.ch_0_5_1 || response.bins['ch_0_5_1'] || 0,
+                            bin2: response.bins.ch_1_2_5 || response.bins['ch_1_2_5'] || 0,
+                            bin3: response.bins.ch_2_5_5 || response.bins['ch_2_5_5'] || 0,
+                            bin4: response.bins.ch_5_10 || response.bins['ch_5_10'] || 0
+                        },
+                        raw: response.raw,
+                        average: response.avg,
+                        checksumOk: response.nextpm ? response.nextpm.chk_ok : false
+                    };
+                }
 
-                // BINS frame format: [ADDR, CMD, STATE, ...23 bytes total]
-                // Bins are 16-bit values at specific offsets
-                const bins = this.parseBinsData(rawBytes);
+                // Fallback: parse from raw if available
+                if (response.raw) {
+                    const rawBytes = response.raw.split(' ').map(b => parseInt(b, 16));
+                    const bins = this.parseBinsData(rawBytes);
 
-                return {
-                    bins,
-                    raw: response.raw,
-                    average: response.avg,
-                    checksumOk: response.chk_ok
-                };
+                    return {
+                        bins,
+                        raw: response.raw,
+                        average: response.avg,
+                        checksumOk: response.nextpm ? response.nextpm.chk_ok : false
+                    };
+                }
             }
             return null;
         } catch (error) {

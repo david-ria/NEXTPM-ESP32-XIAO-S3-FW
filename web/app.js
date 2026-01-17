@@ -385,8 +385,17 @@ function updateUIWithData(data) {
 
     if (data.nextpm && typeof data.nextpm.chk_ok !== 'undefined') {
         const checksumEl = document.getElementById('pro-checksum');
-        checksumEl.textContent = data.nextpm.chk_ok ? 'OK' : 'FAIL';
-        checksumEl.style.color = data.nextpm.chk_ok ? '#4CAF50' : '#F44336';
+
+        // Special handling for BINS checksum issue on FW 1047
+        if (data.info === 'bins' && !data.nextpm.chk_ok) {
+            checksumEl.textContent = 'FAIL (FW 1047 bug)';
+            checksumEl.style.color = '#FF9800'; // Orange instead of red
+            checksumEl.title = 'Bug cosmétique connu sur FW 1047 - données utilisables';
+        } else {
+            checksumEl.textContent = data.nextpm.chk_ok ? 'OK' : 'FAIL';
+            checksumEl.style.color = data.nextpm.chk_ok ? '#4CAF50' : '#F44336';
+            checksumEl.title = '';
+        }
     }
 
     // Update environmental data (Light mode)
@@ -402,11 +411,25 @@ function updateUIWithData(data) {
     }
 
     // Update BINS data (Light mode)
-    if (data.info === 'bins' && data.raw) {
-        const rawBytes = data.raw.split(' ').map(b => parseInt(b, 16));
-        const bins = app.kernel.parseBinsData(rawBytes);
-        if (bins) {
+    if (data.info === 'bins') {
+        // Firmware returns bins with ch_* keys
+        if (data.bins) {
+            const bins = {
+                bin0: data.bins.ch_0_3_0_5 || data.bins['ch_0_3_0_5'] || 0,
+                bin1: data.bins.ch_0_5_1 || data.bins['ch_0_5_1'] || 0,
+                bin2: data.bins.ch_1_2_5 || data.bins['ch_1_2_5'] || 0,
+                bin3: data.bins.ch_2_5_5 || data.bins['ch_2_5_5'] || 0,
+                bin4: data.bins.ch_5_10 || data.bins['ch_5_10'] || 0
+            };
             updateBINSChart(bins);
+        }
+        // Fallback: parse from raw
+        else if (data.raw) {
+            const rawBytes = data.raw.split(' ').map(b => parseInt(b, 16));
+            const bins = app.kernel.parseBinsData(rawBytes);
+            if (bins) {
+                updateBINSChart(bins);
+            }
         }
     }
 }
